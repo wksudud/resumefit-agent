@@ -1,0 +1,53 @@
+{
+  "profile": {
+    "username": "zhangwei-dev",
+    "full_name": "Zhang Wei",
+    "bio": "BUPT Communication Engineering undergraduate. Building AI Agent applications and exploring LLM-powered automation.",
+    "public_repos": 3,
+    "followers": 5,
+    "following": 12,
+    "created_at": "2025-03-01",
+    "contributions_last_year": 45
+  },
+  "repositories": [
+    {
+      "name": "telecomops-agent",
+      "description": "AI Agent for telecom network operations — multi-agent workflow with Streamlit UI",
+      "language": "Python",
+      "topics": ["ai-agent", "streamlit", "telecom", "anomaly-detection", "automation"],
+      "stars": 0,
+      "forks": 0,
+      "is_public": false,
+      "last_updated": "2026-05-10",
+      "has_readme": true,
+      "has_tests": true,
+      "commit_count": 18
+    },
+    {
+      "name": "simple-rag-qa",
+      "description": "Document Q&A with retrieval-augmented generation",
+      "language": "Python",
+      "topics": ["rag", "llm", "streamlit", "faiss"],
+      "stars": 0,
+      "forks": 0,
+      "is_public": false,
+      "last_updated": "2025-12-20",
+      "has_readme": true,
+      "has_tests": false,
+      "commit_count": 8
+    },
+    {
+      "name": "campus-net-monitor",
+      "description": "Campus network latency and packet loss monitor",
+      "language": "Python",
+      "topics": ["networking", "monitoring", "sqlite"],
+      "stars": 0,
+      "forks": 0,
+      "is_public": false,
+      "last_updated": "2025-10-05",
+      "has_readme": false,
+      "has_tests": false,
+      "commit_count": 5
+    }
+  ]
+}
