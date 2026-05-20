@@ -4,6 +4,11 @@
 
 ResumeFit Agent reads a resume, a target job description, and GitHub repository signals, then produces a structured role-fit report with evidence mapping, rewrite suggestions, skill gap analysis, interview prep questions, and portfolio copy.
 
+## Live Demo
+
+- Streamlit app: https://multica-agent-workflow-template-5xmbi6a5exwxxqorrhrnzn.streamlit.app/
+- Chinese README: [README.zh-CN.md](README.zh-CN.md)
+
 ## Quick Start
 
 ```bash
