@@ -23,6 +23,7 @@ ResumeFit Agent 是一个面向 AI 工程岗位求职场景的简历-岗位匹�
 7. 导出报告：生成 Markdown 格式的岗位适配报告。
 8. 简历文件导入/导出：支持 .md、.docx、旧版 .doc 尽力解析，并导出 .md、.doc、.docx 三种改写草稿。
 9. 双模式生成：默认离线规则模式，也可选择 API 增强模式进行语言润色。
+10. 双语示例与展示：英文 / 中文示例简历和 JD 会随语言切换；证据地图、改写建议、能力差距、面试准备和 Markdown 导出会尽量按所选语言展示。
 
 ## 快速运行
 
@@ -61,6 +62,10 @@ repo/
   README.zh-CN.md           # 中文说明
   requirements.txt
   data/                     # 合成示例数据
+    sample_resume.md
+    sample_resume.zh-CN.md
+    sample_jd.md
+    sample_jd.zh-CN.md
   reports/                  # 生成的报告
   scripts/
     smoke_test.py           # 端到端 smoke test

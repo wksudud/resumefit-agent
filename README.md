@@ -42,7 +42,9 @@ repo/
   requirements.txt
   data/
     sample_resume.md          # Synthetic sample resume
+    sample_resume.zh-CN.md    # Synthetic Chinese sample resume
     sample_jd.md              # Synthetic sample JD
+    sample_jd.zh-CN.md        # Synthetic Chinese sample JD
     github_profile.json        # Sample GitHub metadata
     repositories/              # Repository reference docs
   reports/                    # Generated reports
@@ -97,6 +99,8 @@ repo/
 - **Sample data** — all inputs are synthetic, labeled, and safe to share
 - **Resume file support** — Markdown and .docx are preferred; legacy .doc parsing is best-effort and should be reviewed before use
 - **Two-mode generation** — offline deterministic mode plus optional OpenAI-compatible API enhancement
+- **Bilingual demo data** — English and Chinese sample resumes/JDs switch with the UI language
+- **Localized review surfaces** — evidence map, rewrite suggestions, skill gaps, interview prep, and Markdown export follow the selected language where practical
 
 ## Tech Stack
 

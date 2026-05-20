@@ -18,6 +18,14 @@ from src.resume_io import (
 )
 from src.sample_data import load_resume_text, load_jd_text, load_github_profile, load_repo_docs, load_sample_questionnaire
 from src.role_tendency import score_role_tendency, build_sample_questionnaire
+from src.localization import (
+    category_label,
+    dimension_label,
+    display_text,
+    honesty_label,
+    priority_label,
+    status_label,
+)
 
 
 TEXT = {
@@ -59,12 +67,7 @@ TEXT = {
         "cautions": "Cautions",
         "next_actions": "Next Proof-Building Actions",
         "no_tendency": "Run the role tendency assessment first (this tab).",
-        "role_detail_locale_note": (
-            "**Note:** The detailed analysis below (matched signals, cautions, "
-            "scoring rationale, and next actions) is currently English demo text. "
-            "Chinese localization for these sections is pending.\n\n"
-            "**注意：** 以下详细分析内容目前为英文演示文本，中文用户请参考角色名称与分数排名。"
-        ),
+        "role_detail_locale_note": "Role names, project names, and technology names may remain bilingual.",
         "scoring_rationale": "Scoring Rationale / 评分理由",
         "use_sample_questionnaire": "Use sample questionnaire",
         "use_sample": "Use sample data",
@@ -81,6 +84,7 @@ TEXT = {
         "complete": "Analysis complete!",
         "match_overview": "Match Overview",
         "run_first": "Run the analysis first (Input tab).",
+        "sample_locale_note": "Sample resume and JD follow the selected language.",
         "overall_score": "Overall Score",
         "matched": "Matched",
         "partial": "Partial",
@@ -153,13 +157,7 @@ TEXT = {
         "cautions": "注意信号",
         "next_actions": "下一步证明行动",
         "no_tendency": "请先运行岗位倾向评估（本页）。",
-        "role_detail_locale_note": (
-            "**注意：** 以下详细分析内容（匹配信号、注意事项、评分理由、下一步行动）"
-            "目前为英文演示文本，尚未完成中文本地化。"
-            "中文用户请参考上方角色名称与分数排名，详细解释请以英文内容为准。\n\n"
-            "**Note:** The detailed analysis below is currently English demo text. "
-            "Chinese localization for these sections is pending."
-        ),
+        "role_detail_locale_note": "岗位名、项目名和技术名会保留必要的中英混排。",
         "scoring_rationale": "评分理由 / Scoring Rationale",
         "use_sample_questionnaire": "使用示例问卷",
         "use_sample": "使用示例数据",
@@ -176,6 +174,7 @@ TEXT = {
         "complete": "分析完成！",
         "match_overview": "匹配概览",
         "run_first": "请先在“输入”页运行分析。",
+        "sample_locale_note": "示例简历和岗位描述会跟随当前语言切换。",
         "overall_score": "综合分数",
         "matched": "匹配",
         "partial": "部分匹配",
@@ -263,6 +262,7 @@ REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 
 with tab1:
     st.header(t["input_workspace"])
+    st.caption(t["sample_locale_note"])
 
     col1, col2 = st.columns(2)
     with col1:
@@ -284,7 +284,7 @@ with tab1:
             elif uploaded_resume_text:
                 st.success(t["upload_success"])
 
-        default_resume_text = load_resume_text() if use_sample else ""
+        default_resume_text = load_resume_text(language=language) if use_sample else ""
         if uploaded_resume_text:
             default_resume_text = uploaded_resume_text
 
@@ -296,7 +296,7 @@ with tab1:
     with col2:
         jd_text = st.text_area(
             t["jd"],
-            value=load_jd_text() if use_sample else "",
+            value=load_jd_text(language=language) if use_sample else "",
             height=250,
         )
 
@@ -418,19 +418,19 @@ with tab2:
                 if role.matched_signals:
                     st.write(f"**{t['matched_signals']}:**")
                     for sig in role.matched_signals:
-                        st.write(f"- {sig}")
+                        st.write(f"- {display_text(sig, language)}")
                 if role.caution_signals:
                     st.write(f"**{t['cautions']}:**")
                     for c in role.caution_signals:
-                        st.warning(c)
+                        st.warning(display_text(c, language))
                 if role.rationale:
                     st.write(f"**{t['scoring_rationale']}:**")
                     for r_line in role.rationale:
-                        st.write(f"- {r_line}")
+                        st.write(f"- {display_text(r_line, language)}")
                 if role.next_proof_actions:
                     st.write(f"**{t['next_actions']}:**")
                     for a in role.next_proof_actions:
-                        st.info(a)
+                        st.info(display_text(a, language))
     else:
         st.info(t["no_tendency"])
 
@@ -449,9 +449,10 @@ with tab3:
         st.subheader(t["dimension_scores"])
         for dim, score in r.dimension_scores.items():
             label = dim.replace("_", " ").title()
+            label = dimension_label(dim, language)
             st.progress(score / 100, text=f"{label}: {score}%")
 
-        st.caption(r.score_label)
+        st.caption(display_text(r.score_label, language))
 
 with tab4:
     st.header(t["evidence_map"])
@@ -460,14 +461,14 @@ with tab4:
     else:
         for m in st.session_state.result.fit_report.requirement_matches:
             icon = {"matched": "", "partial": "", "gap": ""}.get(m.status, "")
-            with st.expander(f"{icon} {m.requirement} ({m.status})"):
+            with st.expander(f"{icon} {display_text(m.requirement, language)} ({status_label(m.status, language)})"):
                 if m.evidence:
                     for ev in m.evidence:
-                        st.write(f"- {ev}")
+                        st.write(f"- {display_text(ev, language)}")
                 if m.assumption:
                     st.warning(t["assumption"])
                 if m.warning:
-                    st.warning(m.warning)
+                    st.warning(display_text(m.warning, language))
 
 with tab5:
     st.header(t["rewrites"])
@@ -475,22 +476,23 @@ with tab5:
         st.info(t["run_first"])
     else:
         for s in st.session_state.result.rewrite_suggestions:
-            with st.expander(f"{s.source_project} -> {s.target_jd_requirement[:60]}..."):
+            target_label = display_text(s.target_jd_requirement, language)
+            with st.expander(f"{s.source_project} -> {target_label[:60]}..."):
                 st.write(f"**{t['before']}:**")
-                st.info(s.before_text)
+                st.info(display_text(s.before_text, language))
                 st.write(f"**{t['after']}:**")
-                st.success(s.after_text)
-                st.caption(f"{t['evidence']}: {s.evidence}")
-                st.caption(f"{t['honesty']}: {s.honesty_note}")
+                st.success(display_text(s.after_text, language))
+                st.caption(f"{t['evidence']}: {display_text(s.evidence, language)}")
+                st.caption(f"{t['honesty']}: {honesty_label(s.honesty_note, language)}")
 
     st.header(t["skill_gaps"])
     if st.session_state.result and st.session_state.result.skill_gaps:
         for g in st.session_state.result.skill_gaps:
-            with st.expander(f"{g.skill} ({g.priority} {t['priority']})"):
-                st.write(f"**{t['current']}:** {g.current_state}")
-                st.write(f"**{t['target']}:** {g.target_state}")
-                st.write(f"**{t['proof_plan']}:** {g.proof_plan}")
-                st.write(f"**{t['resource']}:** {g.suggested_resource}")
+            with st.expander(f"{display_text(g.skill, language)} ({priority_label(g.priority, language)} {t['priority']})"):
+                st.write(f"**{t['current']}:** {display_text(g.current_state, language)}")
+                st.write(f"**{t['target']}:** {display_text(g.target_state, language)}")
+                st.write(f"**{t['proof_plan']}:** {display_text(g.proof_plan, language)}")
+                st.write(f"**{t['resource']}:** {display_text(g.suggested_resource, language)}")
 
 with tab6:
     st.header(t["interview"])
@@ -498,9 +500,10 @@ with tab6:
         st.info(t["run_first"])
     else:
         for i, q in enumerate(st.session_state.result.interview_questions, 1):
-            with st.expander(f"Q{i}: {q.question[:80]}..."):
-                st.write(f"**{t['category']}:** {q.category}")
-                st.write(f"**{t['angle']}:** {q.suggested_angle}")
+            question_text = display_text(q.question, language)
+            with st.expander(f"Q{i}: {question_text[:80]}..."):
+                st.write(f"**{t['category']}:** {category_label(q.category, language)}")
+                st.write(f"**{t['angle']}:** {display_text(q.suggested_angle, language)}")
 
 with tab7:
     st.header(t["export"])
@@ -510,18 +513,18 @@ with tab7:
         result = st.session_state.result
         pc = result.portfolio_copy
         st.subheader(t["short_card"])
-        st.code(pc.short_card)
+        st.code(display_text(pc.short_card, language))
         st.subheader(t["tagline"])
-        st.info(pc.readme_tagline)
+        st.info(display_text(pc.readme_tagline, language))
         st.subheader(t["bullets"])
         for b in pc.resume_bullets:
-            st.write(f"- {b}")
+            st.write(f"- {display_text(b, language)}")
         st.subheader(t["story"])
-        st.write(pc.project_story)
+        st.write(display_text(pc.project_story, language))
 
         st.divider()
         st.subheader(t["export_md"])
-        report_md = render_report_text(result)
+        report_md = render_report_text(result, language=language)
         st.download_button(
             t["download"],
             report_md,
