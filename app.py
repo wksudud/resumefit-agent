@@ -260,6 +260,14 @@ if "role_tendency_result" not in st.session_state:
 
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 
+
+def sample_file_path(stem: str, lang: str) -> str:
+    if lang == "zh":
+        zh_path = os.path.join(REPO_DIR, "data", f"{stem}.zh-CN.md")
+        if os.path.exists(zh_path):
+            return zh_path
+    return os.path.join(REPO_DIR, "data", f"{stem}.md")
+
 with tab1:
     st.header(t["input_workspace"])
     st.caption(t["sample_locale_note"])
@@ -284,7 +292,7 @@ with tab1:
             elif uploaded_resume_text:
                 st.success(t["upload_success"])
 
-        default_resume_text = load_resume_text(language=language) if use_sample else ""
+        default_resume_text = load_resume_text(sample_file_path("sample_resume", language)) if use_sample else ""
         if uploaded_resume_text:
             default_resume_text = uploaded_resume_text
 
@@ -296,7 +304,7 @@ with tab1:
     with col2:
         jd_text = st.text_area(
             t["jd"],
-            value=load_jd_text(language=language) if use_sample else "",
+            value=load_jd_text(sample_file_path("sample_jd", language)) if use_sample else "",
             height=250,
         )
 
