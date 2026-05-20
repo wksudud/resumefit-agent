@@ -201,9 +201,10 @@ class ResumeFitResult:
     verifier_report: VerifierReport
     constraints: list[str]
     errors: list[str] = field(default_factory=list)
+    role_tendency: RoleTendencyResult | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        d = {
             "resume": self.resume.to_dict(),
             "job": self.job.to_dict(),
             "evidence_items": [e.to_dict() for e in self.evidence_items],
@@ -217,6 +218,63 @@ class ResumeFitResult:
             "constraints": self.constraints,
             "errors": self.errors,
         }
+        if self.role_tendency is not None:
+            d["role_tendency"] = self.role_tendency.to_dict()
+        return d
+
+
+# ── Role Tendency ────────────────────────────────────────────────────────────
+
+@dataclass
+class RoleTendencyInput:
+    """User answers for the pre-fit role tendency questionnaire."""
+    personality_style: list[str] = field(default_factory=list)
+    courses_learned: list[str] = field(default_factory=list)
+    interests: list[str] = field(default_factory=list)
+    disliked_tasks: list[str] = field(default_factory=list)
+    preferred_work_modes: list[str] = field(default_factory=list)
+    work_opinions: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class RoleTendencyScore:
+    """Scored role tendency for a single role direction."""
+    role_name_en: str
+    role_name_zh: str
+    score: int
+    rationale: list[str]
+    matched_signals: list[str]
+    caution_signals: list[str]
+    next_proof_actions: list[str]
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class RoleTendencyResult:
+    """Output of the pre-fit role tendency assessment."""
+    ranked_roles: list[RoleTendencyScore]
+    input_summary: dict[str, list[str]]
+    disclaimer: str = (
+        "This is heuristic career guidance based on self-reported signals, "
+        "not a psychological diagnosis or guaranteed career prescription."
+    )
+    disclaimer_zh: str = (
+        "本评估基于自述信号的启发式职业引导，"
+        "非心理诊断，也不构成有保证的职业建议。"
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "ranked_roles": [r.to_dict() for r in self.ranked_roles],
+            "input_summary": self.input_summary,
+            "disclaimer": self.disclaimer,
+            "disclaimer_zh": self.disclaimer_zh,
+        }
 
 
 # ── Input ────────────────────────────────────────────────────────────────────
@@ -229,6 +287,10 @@ class ResumeFitInputs:
     repo_docs_dir: str
     output_report_path: str = "reports/fit_report.md"
     constraints: list[str] = field(default_factory=list)
+    role_tendency_input: RoleTendencyInput | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        d = asdict(self)
+        if self.role_tendency_input is not None:
+            d["role_tendency_input"] = self.role_tendency_input.to_dict()
+        return d

@@ -138,6 +138,24 @@ def main():
                       for s in result.rewrite_suggestions)
     checks.append(("TelecomOps Agent referenced as evidence", telecom_ref))
 
+    # --- Readback/structure checks on app.py (UI format strings) ---
+    import re
+    app_path = os.path.join(REPO_DIR, "app.py")
+    with open(app_path, "r", encoding="utf-8") as f:
+        app_source = f.read()
+
+    # Check 11: expander label f-string has {role.score} properly braced
+    # Pattern validates the source code contains :{score_color}[{role.score}/100] literally
+    expander_label_ok = bool(re.search(
+        r':\{score_color\}\[\{role\.score\}/100\]',
+        app_source
+    ))
+    checks.append(("app.py expander uses {role.score} (not bare role.score})", expander_label_ok))
+
+    # Check 12: no broken format patterns like "role.score}" without opening brace
+    broken_brace = re.search(r'\[role\.score\}', app_source)
+    checks.append(("app.py has no unbraced [role.score} patterns", broken_brace is None))
+
     all_passed = True
     for label, passed in checks:
         status = "PASS" if passed else "FAIL"

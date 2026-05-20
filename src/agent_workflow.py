@@ -19,12 +19,57 @@ from src.rewrite_coach import suggest_rewrites
 from src.interview_prep import generate_interview_questions
 from src.portfolio_copy import generate_portfolio_copy
 from src.verifier import verify_result
+from src.role_tendency import score_role_tendency
 
 
 def run_resume_fit_workflow(inputs: ResumeFitInputs) -> ResumeFitResult:
     constraints = inputs.constraints or []
     trace: list[WorkflowStep] = []
     errors: list[str] = []
+    role_tendency = None
+
+    # Step 0: Role Tendency Assessment (optional pre-fit step)
+    # Runs only when the user explicitly provides role_tendency_input.
+    # No implicit fallback to sample questionnaire.
+    tendency_input = inputs.role_tendency_input
+
+    if tendency_input is not None:
+        try:
+            role_tendency = score_role_tendency(tendency_input)
+            top_role = role_tendency.ranked_roles[0] if role_tendency.ranked_roles else None
+            trace.append(WorkflowStep(
+                agent="Role Tendency Agent",
+                goal=(
+                    "Assess candidate role tendencies from self-reported personality, "
+                    "courses, interests, work modes, and opinions before JD fit scoring"
+                ),
+                inputs=[
+                    "personality_style", "courses_learned", "interests",
+                    "disliked_tasks", "preferred_work_modes", "work_opinions",
+                ],
+                constraints=[
+                    "Deterministic keyword matching only",
+                    "Heuristic career guidance, not psychological diagnosis",
+                ],
+                evidence=[
+                    f"Scored {len(role_tendency.ranked_roles)} role directions",
+                    f"Top role: {top_role.role_name_en} (score: {top_role.score}/100)" if top_role else "No roles scored",
+                ],
+                output=(
+                    f"Ranked {len(role_tendency.ranked_roles)} role tendencies; "
+                    f"top recommendation: {top_role.role_name_en} ({top_role.score}/100)"
+                ) if top_role else "Role tendency assessment completed",
+                assumptions=[
+                    "Scoring is based on self-reported signals, not verified skills",
+                    "Role definitions are heuristic templates, not exhaustive profiles",
+                ],
+                verification=(
+                    f"RoleTendencyResult with {len(role_tendency.ranked_roles)} ranked roles, "
+                    f"top score {top_role.score}/100"
+                ) if top_role else "RoleTendencyResult generated",
+            ))
+        except Exception as e:
+            errors.append(f"Role tendency assessment failed: {e}")
 
     # Step 1: Parse Resume
     try:
@@ -176,6 +221,7 @@ def run_resume_fit_workflow(inputs: ResumeFitInputs) -> ResumeFitResult:
         workflow_trace=trace,
         verifier_report=VerifierReport(0, 0, 0, 0, [], True),
         constraints=constraints,
+        role_tendency=role_tendency,
     )
     verifier_report = verify_result(result)
     result.verifier_report = verifier_report
@@ -311,6 +357,7 @@ def _error_result(inputs, trace, errors, reason) -> ResumeFitResult:
         verifier_report=VerifierReport(0, 0, 0, 0, [reason], False),
         constraints=inputs.constraints or [],
         errors=errors,
+        role_tendency=None,
     )
 
 

@@ -30,3 +30,9 @@ def load_repo_docs(directory: str | None = None) -> dict[str, str]:
         for fpath in d.glob("*.md"):
             docs[fpath.stem] = fpath.read_text(encoding="utf-8")
     return docs
+
+
+def load_sample_questionnaire() -> "RoleTendencyInput":
+    """Load a default sample role tendency questionnaire for demo use."""
+    from src.role_tendency import build_sample_questionnaire
+    return build_sample_questionnaire()

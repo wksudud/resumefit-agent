@@ -4,8 +4,9 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.schemas import ResumeFitInputs, ResumeFitResult, WorkflowStep
+from src.schemas import ResumeFitInputs, ResumeFitResult, WorkflowStep, RoleTendencyInput
 from src.agent_workflow import run_resume_fit_workflow
+from src.role_tendency import build_sample_questionnaire
 
 
 SAMPLE_RESUME = """## Contact
@@ -123,3 +124,49 @@ class TestWorkflow:
         result = run_resume_fit_workflow(inputs)
         # Should either error or complete with gaps
         assert isinstance(result, ResumeFitResult)
+
+    def test_role_tendency_input_none_gives_no_tendency(self, tmp_path):
+        """When role_tendency_input=None, result.role_tendency must be None."""
+        import json
+        profile_path = tmp_path / "github_profile.json"
+        profile_path.write_text(json.dumps({"repositories": []}))
+        repo_dir = tmp_path / "repos"
+        repo_dir.mkdir()
+
+        inputs = ResumeFitInputs(
+            resume_text=SAMPLE_RESUME,
+            jd_text=SAMPLE_JD,
+            github_profile_path=str(profile_path),
+            repo_docs_dir=str(repo_dir),
+            role_tendency_input=None,
+        )
+        result = run_resume_fit_workflow(inputs)
+        assert result.role_tendency is None, (
+            f"Expected role_tendency=None when no input provided, got {type(result.role_tendency)}"
+        )
+
+    def test_explicit_sample_questionnaire_produces_tendency(self, tmp_path):
+        """Explicit sample questionnaire must produce role tendency for demo use."""
+        import json
+        profile_path = tmp_path / "github_profile.json"
+        profile_path.write_text(json.dumps({"repositories": []}))
+        repo_dir = tmp_path / "repos"
+        repo_dir.mkdir()
+
+        sample_q = build_sample_questionnaire()
+        inputs = ResumeFitInputs(
+            resume_text=SAMPLE_RESUME,
+            jd_text=SAMPLE_JD,
+            github_profile_path=str(profile_path),
+            repo_docs_dir=str(repo_dir),
+            role_tendency_input=sample_q,
+        )
+        result = run_resume_fit_workflow(inputs)
+        assert result.role_tendency is not None, (
+            "Expected role_tendency when explicit sample questionnaire provided"
+        )
+        assert len(result.role_tendency.ranked_roles) > 0, (
+            "Expected non-empty ranked_roles from explicit sample questionnaire"
+        )
+        top = result.role_tendency.ranked_roles[0]
+        assert 0 <= top.score <= 100

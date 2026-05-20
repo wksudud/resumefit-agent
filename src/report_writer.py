@@ -33,6 +33,61 @@ def _render_report(result: ResumeFitResult) -> str:
     lines.append(f"**Generated:** {_now()}")
     lines.append("")
 
+    # ── Role Tendency ────────────────────────────────────────────────────
+    if result.role_tendency is not None:
+        rt = result.role_tendency
+        lines.append("## 0. Pre-Fit Role Tendency Assessment")
+        lines.append("")
+        lines.append("> **Disclaimer:** " + rt.disclaimer)
+        lines.append(">")
+        lines.append("> **免责声明:** " + rt.disclaimer_zh)
+        lines.append("")
+        lines.append("### Ranked Role Directions")
+        lines.append("")
+        lines.append("| # | Role (EN) | Role (ZH) | Score |")
+        lines.append("|---|---|---|---|")
+        for i, role in enumerate(rt.ranked_roles, 1):
+            lines.append(f"| {i} | {role.role_name_en} | {role.role_name_zh} | {role.score}/100 |")
+        lines.append("")
+
+        for i, role in enumerate(rt.ranked_roles, 1):
+            lines.append(f"#### {i}. {role.role_name_en} ({role.role_name_zh}) — Score: {role.score}/100")
+            lines.append("")
+            lines.append(
+                "> **注意：** 以下详细分析内容（匹配信号、注意事项、评分理由、下一步行动）"
+                "目前为英文演示文本，尚未完成中文本地化。中文用户请参考上方角色名称与分数排名，"
+                "详细解释请以英文内容为准。"
+            )
+            lines.append(">")
+            lines.append(
+                "> **Note:** The detailed analysis below (matched signals, cautions, "
+                "scoring rationale, and next actions) is currently English demo text. "
+                "Chinese localization for these sections is pending."
+            )
+            lines.append("")
+            if role.matched_signals:
+                lines.append("**Matched Signals / 匹配信号:**")
+                for sig in role.matched_signals:
+                    lines.append(f"- {sig}")
+                lines.append("")
+            if role.caution_signals:
+                lines.append("**Cautions / 注意事项:**")
+                for c in role.caution_signals:
+                    lines.append(f"- {c}")
+                lines.append("")
+            if role.rationale:
+                lines.append("**Scoring Rationale / 评分理由:**")
+                for r_line in role.rationale:
+                    lines.append(f"- {r_line}")
+                lines.append("")
+            if role.next_proof_actions:
+                lines.append("**Next Proof-Building Actions / 下一步证明行动:**")
+                for a in role.next_proof_actions:
+                    lines.append(f"- {a}")
+                lines.append("")
+        lines.append("---")
+        lines.append("")
+
     # ── Overall Score ───────────────────────────────────────────────────
     lines.append("## 1. Role Match Score")
     lines.append("")
