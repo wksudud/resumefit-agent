@@ -11,6 +11,7 @@ from src.schemas import ResumeFitInputs
 from src.agent_workflow import run_resume_fit_workflow
 from src.report_writer import render_report_text
 from src.resume_io import (
+    build_rewritten_resume_doc,
     build_rewritten_resume_docx,
     build_rewritten_resume_markdown,
     read_uploaded_resume,
@@ -59,10 +60,11 @@ TEXT = {
         "use_sample_questionnaire": "Use sample questionnaire",
         "use_sample": "Use sample data",
         "upload_resume": "Upload resume",
-        "upload_help": "Supports Markdown and Word .docx. Legacy .doc files are detected but cannot be parsed reliably on Streamlit Cloud.",
+        "upload_help": "Supports Markdown, Word .docx, and best-effort legacy .doc parsing.",
         "upload_success": "Loaded resume from uploaded file.",
-        "legacy_doc_warning": "Legacy .doc files are not supported in this cloud app. Please convert the file to .docx or .md, then upload it again.",
-        "unsupported_upload_warning": "Unsupported resume file type. Please upload .md, .markdown, .docx, or convert legacy .doc to .docx.",
+        "legacy_doc_best_effort_warning": "Loaded a legacy .doc file with best-effort text extraction. Please review the text before analysis.",
+        "legacy_doc_empty_warning": "Could not extract readable text from this legacy .doc file. Please convert it to .docx or .md, then upload it again.",
+        "unsupported_upload_warning": "Unsupported resume file type. Please upload .md, .markdown, .docx, or .doc.",
         "resume": "Resume",
         "jd": "Job Description (Markdown)",
         "run": "Run Analysis",
@@ -100,6 +102,7 @@ TEXT = {
         "download": "Download Report (Markdown)",
         "export_rewritten": "Export Rewritten Resume Draft",
         "download_resume_md": "Download Rewritten Resume (Markdown)",
+        "download_resume_doc": "Download Rewritten Resume (Word .doc)",
         "download_resume_docx": "Download Rewritten Resume (Word .docx)",
         "constraints": ["Sample data only", "Deterministic generation"],
     },
@@ -143,10 +146,11 @@ TEXT = {
         "use_sample_questionnaire": "使用示例问卷",
         "use_sample": "使用示例数据",
         "upload_resume": "上传简历",
-        "upload_help": "支持 Markdown 和 Word .docx。旧版 .doc 文件可识别，但在 Streamlit Cloud 中无法可靠解析。",
+        "upload_help": "支持 Markdown、Word .docx，并对旧版 .doc 进行尽力文本解析。",
         "upload_success": "已从上传文件读取简历。",
-        "legacy_doc_warning": "当前云端应用不支持解析旧版 .doc 文件。请先转换为 .docx 或 .md 后重新上传。",
-        "unsupported_upload_warning": "不支持的简历文件类型。请上传 .md、.markdown、.docx，或将旧版 .doc 转为 .docx。",
+        "legacy_doc_best_effort_warning": "已用尽力模式读取旧版 .doc 文件。分析前请先检查文本是否完整。",
+        "legacy_doc_empty_warning": "无法从该旧版 .doc 文件中提取可读文本。请先转换为 .docx 或 .md 后重新上传。",
+        "unsupported_upload_warning": "不支持的简历文件类型。请上传 .md、.markdown、.docx 或 .doc。",
         "resume": "简历",
         "jd": "岗位描述（Markdown）",
         "run": "开始分析",
@@ -184,6 +188,7 @@ TEXT = {
         "download": "下载报告（Markdown）",
         "export_rewritten": "导出改写后简历草稿",
         "download_resume_md": "下载改写后简历（Markdown）",
+        "download_resume_doc": "下载改写后简历（Word .doc）",
         "download_resume_docx": "下载改写后简历（Word .docx）",
         "constraints": ["仅使用示例数据", "确定性生成"],
     },
@@ -234,8 +239,10 @@ with tab1:
         uploaded_resume_text = ""
         if uploaded_resume is not None:
             uploaded_resume_text, upload_warning = read_uploaded_resume(uploaded_resume)
-            if upload_warning == "legacy_doc":
-                st.warning(t["legacy_doc_warning"])
+            if upload_warning == "legacy_doc_best_effort":
+                st.warning(t["legacy_doc_best_effort_warning"])
+            elif upload_warning == "legacy_doc_empty":
+                st.warning(t["legacy_doc_empty_warning"])
             elif upload_warning:
                 st.warning(t["unsupported_upload_warning"])
             elif uploaded_resume_text:
@@ -490,11 +497,18 @@ with tab7:
             language=language,
         )
         rewritten_docx = build_rewritten_resume_docx(rewritten_md)
+        rewritten_doc = build_rewritten_resume_doc(rewritten_md)
         st.download_button(
             t["download_resume_md"],
             rewritten_md,
             file_name="rewritten_resume.md",
             mime="text/markdown",
+        )
+        st.download_button(
+            t["download_resume_doc"],
+            rewritten_doc,
+            file_name="rewritten_resume.doc",
+            mime="application/msword",
         )
         st.download_button(
             t["download_resume_docx"],

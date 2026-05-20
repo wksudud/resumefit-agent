@@ -3,6 +3,7 @@ from io import BytesIO
 from docx import Document
 
 from src.resume_io import (
+    build_rewritten_resume_doc,
     build_rewritten_resume_docx,
     build_rewritten_resume_markdown,
     read_uploaded_resume,
@@ -40,13 +41,22 @@ def test_reads_docx_upload():
     assert "Built an agent workflow." in text
 
 
-def test_legacy_doc_upload_returns_warning():
-    uploaded = NamedBytesIO(b"legacy-binary-word", "resume.doc")
+def test_legacy_doc_upload_extracts_best_effort_text():
+    uploaded = NamedBytesIO(b"Resume Title\nBuilt an agent workflow.", "resume.doc")
+
+    text, warning = read_uploaded_resume(uploaded)
+
+    assert "Resume Title" in text
+    assert warning == "legacy_doc_best_effort"
+
+
+def test_legacy_doc_upload_warns_when_empty():
+    uploaded = NamedBytesIO(b"\x00\x01\x02", "resume.doc")
 
     text, warning = read_uploaded_resume(uploaded)
 
     assert text == ""
-    assert warning == "legacy_doc"
+    assert warning == "legacy_doc_empty"
 
 
 def test_builds_rewritten_resume_markdown():
@@ -68,3 +78,10 @@ def test_builds_rewritten_resume_docx_bytes():
     docx_bytes = build_rewritten_resume_docx("# Draft\n\nResume body")
 
     assert docx_bytes.startswith(b"PK")
+
+
+def test_builds_rewritten_resume_doc_bytes():
+    doc_bytes = build_rewritten_resume_doc("# Draft\n\nResume body")
+
+    assert doc_bytes.startswith(b"<html>")
+    assert b"Resume body" in doc_bytes

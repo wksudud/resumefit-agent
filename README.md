@@ -2,7 +2,7 @@
 
 **AI Agent-powered resume-job fit analysis for AI engineering roles.**
 
-ResumeFit Agent reads a resume, a target job description, and GitHub repository signals, then produces a structured role-fit report with evidence mapping, rewrite suggestions, skill gap analysis, interview prep questions, and portfolio copy.
+ResumeFit Agent reads a resume, a target job description, and GitHub repository signals, then produces a structured role-fit report with evidence mapping, rewrite suggestions, skill gap analysis, interview prep questions, and portfolio copy. The Streamlit UI supports resume upload from Markdown, Word .docx, and best-effort legacy .doc files, then exports rewritten resume drafts as Markdown, Word .doc, and Word .docx.
 
 ## Live Demo
 
@@ -90,10 +90,11 @@ repo/
 - **Evidence-grounded** — every recommendation has evidence or is assumption-flagged
 - **No fabrication** — never generates fake metrics, experience, or credentials
 - **Sample data** — all inputs are synthetic, labeled, and safe to share
+- **Resume file support** — Markdown and .docx are preferred; legacy .doc parsing is best-effort and should be reviewed before use
 
 ## Tech Stack
 
-Python 3.8+, dataclasses, Streamlit (optional UI)
+Python 3.8+, dataclasses, Streamlit (optional UI), python-docx, olefile
 
 ## Deployment
 

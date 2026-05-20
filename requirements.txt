@@ -2,3 +2,4 @@ dataclasses; python_version < "3.7"
 streamlit>=1.28.0
 pytest>=7.0.0
 python-docx>=1.1.0
+olefile>=0.47
