@@ -20,6 +20,7 @@ from src.interview_prep import generate_interview_questions
 from src.portfolio_copy import generate_portfolio_copy
 from src.verifier import verify_result
 from src.role_tendency import score_role_tendency
+from src.api_enhancer import enhance_with_api
 
 
 def run_resume_fit_workflow(inputs: ResumeFitInputs) -> ResumeFitResult:
@@ -222,7 +223,17 @@ def run_resume_fit_workflow(inputs: ResumeFitInputs) -> ResumeFitResult:
         verifier_report=VerifierReport(0, 0, 0, 0, [], True),
         constraints=constraints,
         role_tendency=role_tendency,
+        generation_mode=inputs.generation_mode,
     )
+
+    if inputs.generation_mode == "api":
+        result = enhance_with_api(
+            result=result,
+            api_key=inputs.api_key,
+            base_url=inputs.api_base_url,
+            model=inputs.api_model,
+        )
+
     verifier_report = verify_result(result)
     result.verifier_report = verifier_report
 
@@ -358,6 +369,7 @@ def _error_result(inputs, trace, errors, reason) -> ResumeFitResult:
         constraints=inputs.constraints or [],
         errors=errors,
         role_tendency=None,
+        generation_mode=inputs.generation_mode,
     )
 
 

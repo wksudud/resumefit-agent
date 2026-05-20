@@ -170,3 +170,23 @@ class TestWorkflow:
         )
         top = result.role_tendency.ranked_roles[0]
         assert 0 <= top.score <= 100
+
+    def test_api_mode_without_key_falls_back_to_offline(self, tmp_path):
+        import json
+        profile_path = tmp_path / "github_profile.json"
+        profile_path.write_text(json.dumps({"repositories": []}))
+        repo_dir = tmp_path / "repos"
+        repo_dir.mkdir()
+
+        inputs = ResumeFitInputs(
+            resume_text=SAMPLE_RESUME,
+            jd_text=SAMPLE_JD,
+            github_profile_path=str(profile_path),
+            repo_docs_dir=str(repo_dir),
+            generation_mode="api",
+            api_key="",
+        )
+        result = run_resume_fit_workflow(inputs)
+
+        assert result.generation_mode == "offline"
+        assert any("API mode selected" in error for error in result.errors)

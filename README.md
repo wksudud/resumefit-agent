@@ -4,6 +4,11 @@
 
 ResumeFit Agent reads a resume, a target job description, and GitHub repository signals, then produces a structured role-fit report with evidence mapping, rewrite suggestions, skill gap analysis, interview prep questions, and portfolio copy. The Streamlit UI supports resume upload from Markdown, Word .docx, and best-effort legacy .doc files, then exports rewritten resume drafts as Markdown, Word .doc, and Word .docx.
 
+The app now has two generation modes:
+
+- **Offline rules (no API):** deterministic parsing, scoring, rewrite templates, and verification. This is the default portfolio-safe mode.
+- **API enhanced:** runs the offline workflow first, then uses an OpenAI-compatible `/chat/completions` endpoint to polish rewrite wording, interview angles, and portfolio copy. The deterministic evidence map remains the source of truth, and API keys are never stored in the repository.
+
 ## Live Demo
 
 - Streamlit app: https://multica-agent-workflow-template-5xmbi6a5exwxxqorrhrnzn.streamlit.app/
@@ -91,10 +96,11 @@ repo/
 - **No fabrication** — never generates fake metrics, experience, or credentials
 - **Sample data** — all inputs are synthetic, labeled, and safe to share
 - **Resume file support** — Markdown and .docx are preferred; legacy .doc parsing is best-effort and should be reviewed before use
+- **Two-mode generation** — offline deterministic mode plus optional OpenAI-compatible API enhancement
 
 ## Tech Stack
 
-Python 3.8+, dataclasses, Streamlit (optional UI), python-docx, olefile
+Python 3.8+, dataclasses, Streamlit (optional UI), python-docx, olefile, optional OpenAI-compatible Chat Completions API
 
 ## Deployment
 
@@ -102,8 +108,8 @@ This project is ready for Streamlit Community Cloud:
 
 - Main file: `app.py`
 - Python dependencies: `requirements.txt`
-- Runtime behavior: offline deterministic demo with synthetic sample data
-- Secrets required: none
+- Runtime behavior: offline deterministic demo with synthetic sample data by default
+- Secrets required: none for offline mode; API mode accepts a session-only key in the sidebar
 
 ## License
 

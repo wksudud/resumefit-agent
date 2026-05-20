@@ -202,6 +202,8 @@ class ResumeFitResult:
     constraints: list[str]
     errors: list[str] = field(default_factory=list)
     role_tendency: RoleTendencyResult | None = None
+    generation_mode: str = "offline"
+    api_provider: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         d = {
@@ -217,6 +219,8 @@ class ResumeFitResult:
             "verifier_report": self.verifier_report.to_dict(),
             "constraints": self.constraints,
             "errors": self.errors,
+            "generation_mode": self.generation_mode,
+            "api_provider": self.api_provider,
         }
         if self.role_tendency is not None:
             d["role_tendency"] = self.role_tendency.to_dict()
@@ -288,6 +292,10 @@ class ResumeFitInputs:
     output_report_path: str = "reports/fit_report.md"
     constraints: list[str] = field(default_factory=list)
     role_tendency_input: RoleTendencyInput | None = None
+    generation_mode: str = "offline"
+    api_key: str = ""
+    api_base_url: str = "https://api.openai.com/v1"
+    api_model: str = "gpt-4o-mini"
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)

@@ -25,7 +25,16 @@ TEXT = {
         "language_label": "Language",
         "language_name": "English",
         "title": "ResumeFit Agent",
-        "caption": "AI Agent-powered resume-job fit analysis | Deterministic prototype",
+        "caption": "AI Agent-powered resume-job fit analysis | Offline rules + optional API mode",
+        "mode_label": "Generation mode",
+        "mode_offline": "Offline rules (no API)",
+        "mode_api": "API enhanced",
+        "api_key": "API key",
+        "api_base_url": "API base URL",
+        "api_model": "API model",
+        "api_help": "Uses an OpenAI-compatible /chat/completions endpoint. The key is only used for this session.",
+        "api_missing": "API mode needs an API key. Without it, the app falls back to offline results.",
+        "mode_status": "Mode",
         "tabs": [
             "Input", "Role Tendency", "Match Overview",
             "Evidence Map", "Rewrites & Gaps",
@@ -110,7 +119,16 @@ TEXT = {
         "language_label": "语言",
         "language_name": "中文",
         "title": "ResumeFit Agent",
-        "caption": "面向求职场景的简历-岗位匹配 Agent | 离线确定性原型",
+        "caption": "面向求职场景的简历-岗位匹配 Agent | 离线规则 + 可选 API 增强",
+        "mode_label": "生成模式",
+        "mode_offline": "离线规则（不使用 API）",
+        "mode_api": "API 增强",
+        "api_key": "API Key",
+        "api_base_url": "API Base URL",
+        "api_model": "API 模型",
+        "api_help": "使用 OpenAI-compatible /chat/completions 接口。Key 只在本次页面会话中使用。",
+        "api_missing": "API 增强模式需要 API key。未填写时会自动回退到离线结果。",
+        "mode_status": "模式",
         "tabs": [
             "输入", "角色倾向", "匹配概览",
             "证据地图", "改写与差距",
@@ -208,8 +226,26 @@ language = st.sidebar.radio(
 )
 t = TEXT[language]
 
+mode_options = ["offline", "api"]
+generation_mode = st.sidebar.radio(
+    t["mode_label"],
+    options=mode_options,
+    format_func=lambda code: t["mode_offline"] if code == "offline" else t["mode_api"],
+)
+api_key = ""
+api_base_url = "https://api.openai.com/v1"
+api_model = "gpt-4o-mini"
+if generation_mode == "api":
+    st.sidebar.caption(t["api_help"])
+    api_base_url = st.sidebar.text_input(t["api_base_url"], value=api_base_url)
+    api_model = st.sidebar.text_input(t["api_model"], value=api_model)
+    api_key = st.sidebar.text_input(t["api_key"], type="password")
+    if not api_key:
+        st.sidebar.warning(t["api_missing"])
+
 st.title(t["title"])
 st.caption(t["caption"])
+st.caption(f"{t['mode_status']}: {t['mode_offline'] if generation_mode == 'offline' else t['mode_api']}")
 
 tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(t["tabs"])
 
@@ -277,6 +313,10 @@ with tab1:
                 output_report_path=os.path.join(REPO_DIR, "reports", "fit_report.md"),
                 constraints=t["constraints"],
                 role_tendency_input=st.session_state.get("role_tendency_input"),
+                generation_mode=generation_mode,
+                api_key=api_key,
+                api_base_url=api_base_url,
+                api_model=api_model,
             )
             st.session_state.result = run_resume_fit_workflow(inputs)
             st.session_state.last_resume_text = resume_text

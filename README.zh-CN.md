@@ -2,6 +2,11 @@
 
 ResumeFit Agent 是一个面向 AI 工程岗位求职场景的简历-岗位匹配工具。它读取简历、目标岗位 JD 和 GitHub 项目信号，输出结构化匹配报告，包括岗位适配分数、证据映射、简历改写建议、能力差距、面试追问和作品集展示文案。Streamlit 网页端支持上传 Markdown、Word .docx 和尽力解析的旧版 .doc 简历，并可导出改写后的 Markdown、Word .doc 和 Word .docx 草稿。
 
+现在项目提供两套生成模式：
+
+- **离线规则模式（不使用 API）**：使用确定性解析、评分、模板改写和验证器，是默认的作品集安全模式。
+- **API 增强模式**：先运行离线工作流，再通过 OpenAI-compatible `/chat/completions` 接口润色改写建议、面试回答角度和作品集文案。证据地图和评分仍以离线规则结果为准，API key 不会写入仓库。
+
 ## 在线体验
 
 - Streamlit 在线版：https://multica-agent-workflow-template-5xmbi6a5exwxxqorrhrnzn.streamlit.app/
@@ -17,6 +22,7 @@ ResumeFit Agent 是一个面向 AI 工程岗位求职场景的简历-岗位匹�
 6. 面试准备：生成可能被追问的问题和回答角度。
 7. 导出报告：生成 Markdown 格式的岗位适配报告。
 8. 简历文件导入/导出：支持 .md、.docx、旧版 .doc 尽力解析，并导出 .md、.doc、.docx 三种改写草稿。
+9. 双模式生成：默认离线规则模式，也可选择 API 增强模式进行语言润色。
 
 ## 快速运行
 
@@ -106,6 +112,7 @@ repo/
 - 不编造经历、指标、公司或真实项目成果。
 - 所有建议必须有证据支撑，或显式标记为假设。
 - Markdown 和 .docx 是推荐格式；旧版 .doc 属于尽力解析，使用前需要检查文本是否完整。
+- 离线模式不需要任何 API key；API 增强模式只在当前页面会话中使用用户输入的 key。
 
 ## 部署说明
 
@@ -113,7 +120,7 @@ repo/
 
 - 入口文件：`app.py`
 - 依赖文件：`requirements.txt`
-- Secrets：不需要
+- Secrets：离线模式不需要；API 增强模式可在侧边栏临时输入 key
 - 默认数据：仓库内合成示例数据
 
 ## 许可证
